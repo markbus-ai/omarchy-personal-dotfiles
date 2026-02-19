@@ -1,0 +1,9 @@
+{ "workbench.colorTheme": "Matte Black",    
+    
+    "dart.flutterSdkPath": "/home/markbusking/Applications/flutter",
+    "dart.cliConsole": "terminal",
+    "C_Cpp.default.compilerPath": "/usr/bin/gcc",
+    "python.analysis.typeCheckingMode": "standard",
+    "git.autofetch": true,
+    "python.defaultInterpreterPath": "/home/markbusking/venv",
+}
