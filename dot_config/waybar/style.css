@@ -1,0 +1,248 @@
+/* --- IMPORTAR TEMA DINÁMICO (Colores extraídos) --- */
+@import "theme_colors.css";
+
+/* --- MAPEO DE VARIABLES --- */
+/* Mapeamos las variables internas de este estilo a las del tema importado */
+@define-color bg @background;
+@define-color fg @foreground;
+
+/* Asignamos roles lógicos basados en la paleta del tema */
+@define-color lila @blue;       /* Color de acento principal (bordes, activo) */
+@define-color rosa @magenta;
+@define-color azul @blue;
+@define-color verde @green;
+@define-color amarillo @yellow;
+@define-color naranja @warning_color; 
+@define-color rojo @red;
+
+/* --- RESET GLOBAL --- */
+* {
+  border: none;
+  border-radius: 0;
+  /* CAMBIO CLAVE: Usá 'Mono' en vez de 'Propo' */
+  font-family:
+    "CaskaydiaCove Nerd Font Mono", "JetBrainsMono Nerd Font", monospace;
+  font-weight: bold;
+  font-size: 14px;
+  min-height: 0;
+  text-shadow: none;
+}
+window#waybar {
+  background: transparent; /* Fondo transparente total para permitir islas */
+}
+
+/* Tooltips */
+tooltip {
+  background: @bg;
+  border-radius: 10px;
+  border: 1px solid @lila;
+  padding: 5px;
+}
+tooltip label {
+  color: @fg;
+}
+
+/* --- ESTRUCTURA DE ISLAS (Izquierda, Centro, Derecha) --- */
+.modules-left,
+.modules-center,
+.modules-right {
+  background-color: @bg;
+  border-radius: 15px;
+  padding: 2px 15px;
+  margin-top: 8px;
+  /* Sombra más definida para efecto de profundidad */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  /* Borde dinámico usando alpha del color de acento */
+  border: 1px solid alpha(@lila, 0.15);
+}
+.modules-left {
+  margin-left: 15px;
+}
+
+.modules-right {
+  margin-right: 15px;
+}
+
+/* --- WORKSPACES --- */
+#workspaces {
+  padding: 0;
+  margin: 0;
+}
+
+#workspaces button {
+  margin: 0 2px;
+  padding: 0 10px;
+  color: alpha(@fg, 0.4); /* Gris apagado dinámico */
+  transition: all 0.3s ease-in-out;
+  min-width: 25px; /* Asegura que cada hexágono tenga su lugar fijo */
+  margin: 0 3px;
+}
+
+#workspaces button.active {
+  color: @lila;
+  border-bottom: 2px solid @lila; /* Línea inferior solo en el activo */
+  border-radius: 0; /* Necesario para que el border-bottom se vea recto o ajustado */
+}
+
+#workspaces button.focused {
+  color: @fg;
+}
+
+#workspaces button:hover {
+  background: alpha(@lila, 0.1);
+  color: @lila;
+  border-radius: 8px;
+}
+
+#workspaces button.empty {
+  color: alpha(@fg, 0.2); /* Visible pero tenue (20%) */
+}
+
+/* --- ESTILOS DE MÓDULOS ESPECÍFICOS --- */
+
+/* Iconos y espaciado general */
+#custom-ocr,
+#tray,
+#clock,
+#cpu,
+#memory,
+#battery,
+#backlight,
+#network,
+#bluetooth,
+#pulseaudio,
+#custom-weather,
+#custom-colorpicker,
+#custom-omarchy-theme-set,
+#custom-nerd-dictation,
+#idle_inhibitor,
+#custom-notification,
+#custom-update,
+#custom-updatespacman,
+#custom-screenrecording-indicator,
+#disk,
+#custom-omarchy {
+  padding: 0 10px;
+}
+
+/* Colores para dar vida sin saturar */
+
+#custom-omarchy {
+  font-size: 18px;
+  color: @lila;
+  margin-right: 5px;
+  padding-left: 0;
+}
+
+#clock {
+  color: @naranja;
+  border-left: 1px solid alpha(@lila, 0.3);
+  margin-left: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+#battery {
+  color: @verde;
+}
+#battery.warning {
+  color: @naranja;
+}
+#battery.critical {
+  color: @rojo;
+  animation-name: blink-critical;
+  animation-duration: 1s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+/* Asegurate de que el keyframe esté definido así */
+@keyframes blink-critical {
+  to {
+    color: @fg;
+  }
+}
+
+#cpu {
+  color: @rosa;
+}
+#memory {
+  color: @azul;
+}
+#disk {
+  color: @amarillo;
+}
+
+#network {
+  color: @azul;
+}
+
+#bluetooth {
+  color: alpha(@fg, 0.4);
+}
+#bluetooth.on,
+#bluetooth.connected {
+  color: @azul;
+}
+
+#pulseaudio {
+  color: @lila;
+}
+#pulseaudio.muted {
+  color: alpha(@fg, 0.4);
+}
+
+#custom-weather {
+  color: @amarillo;
+  margin-right: 5px;
+}
+
+#temperature {
+  color: @verde;
+}
+#temperature.critical {
+  color: @rojo;
+}
+
+#custom-updatespacman {
+  color: @rojo;
+}
+#custom-update {
+  color: @verde;
+}
+
+/* Tray adjustments */
+#tray > .passive {
+  -gtk-icon-effect: dim;
+}
+#tray > .needs-attention {
+  -gtk-icon-effect: highlight;
+  background-color: @rojo;
+}
+
+/* Otros módulos custom que tenías */
+#custom-screenrecording-indicator {
+  color: @rojo;
+  font-size: 12px;
+  animation-name: blink-critical;
+  animation-duration: 1s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  margin-right: 5px;
+}
+#idle_inhibitor.activated {
+  color: @verde;
+}
+#idle_inhibitor.deactivated {
+  color: alpha(@fg, 0.4);
+}
+
+#custom-windowpill {
+  color: @fg;
+  padding-left: 10px;
+  /* El separador que pusiste en el script/config */
+  border-left: 1px solid alpha(@lila, 0.3);
+  margin-left: 10px;
+}

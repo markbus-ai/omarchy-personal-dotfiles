@@ -1,0 +1,127 @@
+return {
+  -- 1. LSP: clangd
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      servers = {
+        clangd = {
+          cmd = {
+            "clangd",
+            "--background-index",
+            "--clang-tidy",
+            "--header-insertion=iwyu",
+            "--completion-style=detailed",
+          },
+          capabilities = {
+            offsetEncoding = { "utf-16" },
+          },
+          root_dir = function(fname)
+            local util = require("lspconfig.util")
+            if not fname or type(fname) ~= "string" then
+              return nil
+            end
+            return util.root_pattern(
+              "Makefile",
+              "configure.ac",
+              "configure.in",
+              "config.h.in",
+              "meson.build",
+              "opt/build/meson.build",
+              "package.xml",
+              "compile_commands.json",
+              "compile_flags.txt"
+            )(fname) or util.find_git_ancestor(fname)
+          end,
+        },
+      },
+    },
+  },
+
+  -- 2. Formatter: clang-format
+  {
+    "stevearc/conform.nvim",
+    opts = {
+      formatters_by_ft = {
+        c = { "clang-format" },
+        cpp = { "clang-format" },
+      },
+    },
+  },
+
+  -- 3. Debugger: nvim-dap + codelldb
+  {
+    "mfussenegger/nvim-dap",
+    dependencies = {
+      {
+        "mason-org/mason.nvim",
+        opts = function(_, opts)
+          opts.ensure_installed = opts.ensure_installed or {}
+          vim.list_extend(opts.ensure_installed, { "codelldb" })
+        end,
+      },
+    },
+    -- USAMOS config EN LUGAR DE opts PARA EVITAR LLAMAR A setup()
+    config = function()
+      local dap = require("dap")
+      
+      -- Configuración del adaptador codelldb
+      if not dap.adapters.codelldb then
+        dap.adapters.codelldb = {
+          type = "server",
+          port = "${port}",
+          executable = {
+            command = "codelldb", 
+            args = { "--port", "${port}" },
+          },
+        }
+      end
+
+      -- Configuración para C
+      dap.configurations.c = {
+        {
+          name = "Launch file",
+          type = "codelldb",
+          request = "launch",
+          program = function()
+            return vim.fn.input("Path al ejecutable: ", vim.fn.getcwd() .. "/", "file")
+          end,
+          cwd = "${workspaceFolder}",
+          stopOnEntry = false,
+        },
+      }
+      -- Reutilizar configuración para C++
+      dap.configurations.cpp = dap.configurations.c
+    end,
+  },
+
+  -- Interfaz gráfica para el debugger
+  {
+    "rcarriga/nvim-dap-ui",
+    dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
+    opts = {},
+    config = function(_, opts)
+      local dap = require("dap")
+      local dapui = require("dapui")
+      dapui.setup(opts)
+      dap.listeners.after.event_initialized["dapui_config"] = function()
+        dapui.open({})
+      end
+      dap.listeners.before.event_terminated["dapui_config"] = function()
+        dapui.close({})
+      end
+      dap.listeners.before.event_exited["dapui_config"] = function()
+        dapui.close({})
+      end
+    end,
+  },
+
+  -- 4. Syntax Highlighting: Treesitter
+  {
+    "nvim-treesitter/nvim-treesitter",
+    opts = function(_, opts)
+      if type(opts.ensure_installed) == "table" then
+        vim.list_extend(opts.ensure_installed, { "c", "cpp" })
+      end
+    end,
+  },
+}

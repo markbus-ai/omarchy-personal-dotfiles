@@ -1,0 +1,14 @@
+#!/bin/bash
+# Nerd-dictation begin script
+
+MODEL_DIR="$HOME/.config/nerd-dictation/model/es"
+COOKIE_FILE="/tmp/nerd-dictation-cookie"
+
+# Remove old cookie if exists
+rm -f "$COOKIE_FILE"
+
+# Start nerd-dictation with cookie
+nerd-dictation begin \
+    --vosk-model-dir="$MODEL_DIR" \
+    --output=SIMULATE_INPUT \
+    --cookie="$COOKIE_FILE" &

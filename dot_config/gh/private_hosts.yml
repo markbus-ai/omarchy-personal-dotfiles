@@ -1,0 +1,6 @@
+github.com:
+    git_protocol: ssh
+    users:
+        markbus-ai:
+            git_protocol: ssh
+    user: markbus-ai

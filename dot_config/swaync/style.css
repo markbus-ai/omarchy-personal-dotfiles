@@ -1,0 +1,242 @@
+/* --- IMPORTAR COLORES (Sincronizado con Waybar/Omarchy) --- */
+@import "../waybar/theme_colors.css";
+
+/* --- VARIABLES LOCALES --- */
+@define-color cc-bg alpha(@background, 0.95); /* Casi sólido */
+@define-color noti-bg @background;            /* Sólido */
+@define-color noti-border @blue;
+@define-color text-color @foreground;
+@define-color text-lighter alpha(@foreground, 0.8);
+@define-color accent @blue;
+@define-color urgent @red;
+
+/* --- ESTILO GLOBAL --- */
+* {
+  font-family: "CaskaydiaCove Nerd Font Mono", "JetBrainsMono Nerd Font", monospace;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* El contenedor principal de la ventana de control */
+.control-center {
+  background: @cc-bg;
+  border: 1px solid alpha(@accent, 0.2);
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  margin: 18px; /* Margen para que flote separado del borde de pantalla */
+  padding: 14px;
+}
+
+/* --- WIDGETS (Tarjetas Superiores) --- */
+
+/* Título y Botón "Limpiar Todo" */
+.widget-title {
+  color: @text-color;
+  background: alpha(@background, 0.8);
+  padding: 8px 16px;
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+  border-radius: 16px;
+  border: 1px solid alpha(@text-color, 0.1);
+}
+
+.widget-title > button {
+  font-size: 0.9rem;
+  color: @background;
+  background: @accent;
+  text-shadow: none;
+  box-shadow: none;
+  border-radius: 12px;
+  padding: 4px 12px;
+  border: none;
+}
+
+.widget-title > button:hover {
+  background: shade(@accent, 1.2);
+}
+
+/* Botón DND (No Molestar) */
+.widget-dnd {
+  background: alpha(@background, 0.8);
+  padding: 8px 16px;
+  margin: 0 0 10px 0;
+  border-radius: 16px;
+  border: 1px solid alpha(@text-color, 0.1);
+  font-size: 1.1rem;
+  color: @text-color;
+}
+
+.widget-dnd > switch {
+  border-radius: 12px;
+  background: alpha(@text-color, 0.2);
+  box-shadow: none;
+}
+
+.widget-dnd > switch:checked {
+  background: @urgent; /* Rojo para indicar DND activo */
+  border: 1px solid @urgent;
+}
+
+.widget-dnd > switch slider {
+  background: @foreground;
+  border-radius: 12px;
+}
+
+/* Label del widget (Texto "Do Not Disturb") */
+.widget-label {
+  margin: 10px;
+}
+
+/* Reproductores Multimedia (MPRIS) */
+.widget-mpris {
+  background: alpha(@background, 0.8);
+  padding: 8px;
+  margin: 0 0 10px 0;
+  border-radius: 16px;
+  border: 1px solid alpha(@text-color, 0.1);
+}
+
+.widget-mpris-player {
+  padding: 8px;
+  margin: 0;
+}
+
+.widget-mpris-title {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: @accent;
+}
+
+.widget-mpris-subtitle {
+  font-size: 0.9rem;
+  color: @text-lighter;
+}
+
+/* Sliders de Volumen y Brillo */
+.widget-volume,
+.widget-backlight {
+  background: alpha(@background, 0.8);
+  padding: 8px 16px;
+  margin: 0 0 6px 0;
+  border-radius: 16px;
+  border: 1px solid alpha(@text-color, 0.1);
+  font-size: 1.2rem;
+  color: @text-color;
+}
+
+/* --- LISTA DE NOTIFICACIONES --- */
+
+.control-center-list {
+  background: transparent;
+  margin-top: 10px;
+}
+
+.control-center-list-placeholder {
+  opacity: 0.5;
+}
+
+/* Notificación Individual (En el centro) */
+.notification-row {
+  outline: none;
+  margin: 6px 0;
+  padding: 0;
+}
+
+.notification-row:focus,
+.notification-row:hover {
+  background: transparent;
+}
+
+.notification {
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-content {
+  background: @noti-bg;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid alpha(@text-color, 0.1);
+  margin: 0;
+  transition: all 0.2s ease;
+}
+
+.notification-row:hover .notification-content {
+  background: shade(@noti-bg, 1.1);
+  border-color: @accent;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Encabezados y Texto */
+.summary {
+  font-size: 1rem;
+  font-weight: 800;
+  color: @accent;
+  text-shadow: none;
+}
+
+.time {
+  font-size: 0.8rem;
+  color: @text-lighter;
+  margin-right: 24px;
+}
+
+.body {
+  font-size: 0.9rem;
+  color: @text-color;
+  margin-top: 4px;
+}
+
+/* Botón cerrar notificación */
+.close-button {
+  background: transparent;
+  color: @text-lighter;
+  text-shadow: none;
+  padding: 0;
+  border-radius: 100%;
+  margin-top: 5px;
+  margin-right: 5px;
+  box-shadow: none;
+  border: none;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.close-button:hover {
+  background: @urgent;
+  color: @background;
+  transition: all 0.2s;
+}
+
+/* Acciones (Botones dentro de la noti) */
+.notification-action {
+  padding: 6px 12px;
+  margin-top: 8px;
+  color: @background;
+  background: @accent;
+  border-radius: 10px;
+  border: none;
+  box-shadow: none;
+}
+
+.notification-action:hover {
+  background: shade(@accent, 1.2);
+}
+
+/* --- NOTIFICACIONES FLOTANTES (Popups) --- */
+.floating-notifications {
+  background: transparent;
+}
+
+.floating-notifications .notification {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  border-radius: 16px;
+  margin: 12px;
+  background: transparent;
+}
+
+.floating-notifications .notification-content {
+  background: @noti-bg;
+  border: 1px solid @accent;
+}

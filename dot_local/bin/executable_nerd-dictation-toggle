@@ -1,0 +1,15 @@
+#!/bin/bash
+# Nerd-dictation toggle script for Hyprland
+
+PIDFILE="/tmp/nerd-dictation.pid"
+MODEL_DIR="$HOME/.config/nerd-dictation/model/es"
+
+if [ -f "$PIDFILE" ]; then
+    # Stop dictation
+    nerd-dictation end &
+    rm "$PIDFILE"
+else
+    # Start dictation
+    nerd-dictation begin --vosk-model-dir="$MODEL_DIR" --output=TYPE &
+    echo $! > "$PIDFILE"
+fi

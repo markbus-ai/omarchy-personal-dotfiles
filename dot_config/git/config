@@ -1,0 +1,16 @@
+[alias]
+	co = checkout
+	br = branch
+	ci = commit
+	st = status
+[pull]
+	rebase = true
+[init]
+	defaultBranch = master
+[user]
+	name = Marcos Bustos
+	email = marcosbustos.dev@gmail.com
+[credential]
+	helper = store
+[url "git@github.com:"]
+	insteadOf = https://github.com/

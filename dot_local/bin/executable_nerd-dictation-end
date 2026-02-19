@@ -1,0 +1,9 @@
+#!/bin/bash
+# Nerd-dictation end script
+
+COOKIE_FILE="/tmp/nerd-dictation-cookie"
+
+if [ -f "$COOKIE_FILE" ]; then
+    nerd-dictation end --cookie="$COOKIE_FILE"
+    rm -f "$COOKIE_FILE"
+fi

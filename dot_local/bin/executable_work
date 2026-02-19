@@ -1,0 +1,186 @@
+#!/bin/bash
+STATE="$HOME/.working"
+CSV="$HOME/working.csv"
+
+show_help() {
+  cat <<'EOF'
+work — pequeño tracker de tiempo en bash
+
+USO:
+  work in "tarea..."         Comienza una tarea (requiere nombre)
+  work out                   Termina la tarea activa y la registra en CSV
+  work status                Muestra la tarea activa y el tiempo transcurrido
+  work cancel                Cancela la tarea activa sin registrar
+  work last                  Muestra el último registro del CSV
+  work today                 Suma y muestra el tiempo trabajado hoy
+  work pause                 Pausa la tarea activa
+  work resume                Reanuda la tarea pausada
+  work rename "nuevo nombre" Renombra la tarea activa
+  work alert                 Avisa si superaste 4 horas
+  work bill CLIENTE RATE     Calcula horas y total a facturar
+  work help | -h | --help    Muestra esta ayuda
+
+ARCHIVOS:
+  $HOME/.working     Estado actual (nombre,inicio,acumulado,modo)
+  $HOME/working.csv  Historial: nombre,inicio,fin,segundos
+
+NOTAS:
+  - CSV usa fechas "YYYY-MM-DD HH:MM:SS".
+  - 'bill' suma filas cuyo nombre contenga CLIENTE.
+EOF
+}
+
+# ayuda por defecto
+if [ -z "$1" ] || [ "$1" = "help" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  show_help
+  exit 0
+fi
+
+# helpers
+now() { date +%s; }
+fmt_dhms() { # $1 = segundos -> "Xh Ym Zs"
+  local t=$1 h m s msg=""
+  h=$(( t / 3600 ))
+  m=$(( (t % 3600) / 60 ))
+  s=$(( t % 60 ))
+  [ "$h" -gt 0 ] && msg+="${h}h "
+  [ "$m" -gt 0 ] && msg+="${m}m "
+  [ "$s" -gt 0 ] && msg+="${s}s"
+  echo "${msg%" "}"
+}
+ensure_csv() {
+  if [ ! -f "$CSV" ]; then
+    echo "nombre,inicio,fin,tiempo_trabajado" > "$CSV"
+  fi
+}
+
+case "$1" in
+  in)
+    if [ -f "$STATE" ]; then
+      echo "ya estás trabajando; para terminar: work out"
+      exit 0
+    fi
+    shift
+    tarea="$*"
+    if [ -z "$tarea" ]; then echo "falta el nombre de la tarea"; exit 1; fi
+    echo "$tarea,$(now),0,run" > "$STATE"
+    echo "empezaste: $tarea"
+    ;;
+
+  out)
+    if [ ! -f "$STATE" ]; then
+      echo "no hay tarea activa"; exit 0
+    fi
+    IFS=',' read -r nombre inicio acumulado modo < "$STATE"
+    fin=$(now)
+    if [ "$modo" = "run" ]; then
+      total=$(( acumulado + fin - inicio ))
+    else
+      total=$acumulado
+    fi
+    echo "terminaste: $nombre — trabajaste $(fmt_dhms "$total")"
+    ensure_csv
+    echo "\"$nombre\",$(date -d "@$inicio" "+%Y-%m-%d %H:%M:%S"),$(date -d "@$fin" "+%Y-%m-%d %H:%M:%S"),$total" >> "$CSV"
+    rm -f "$STATE"
+    ;;
+
+  status)
+    if [ ! -f "$STATE" ]; then
+      echo "no hay tarea activa"; exit 0
+    fi
+    IFS=',' read -r nombre inicio acumulado modo < "$STATE"
+    if [ "$modo" = "run" ]; then
+      total=$(( acumulado + $(now) - inicio ))
+    else
+      total=$acumulado
+    fi
+    echo "estás trabajando en \"$nombre\" hace $(fmt_dhms "$total") [$modo]"
+    ;;
+
+  cancel)
+    if [ -f "$STATE" ]; then rm -f "$STATE" && echo "tarea cancelada"; else echo "no hay tarea activa"; fi
+    ;;
+
+  last)
+    if [ -f "$CSV" ] && [ "$(wc -l < "$CSV")" -gt 1 ]; then
+      line=$(tail -n 1 "$CSV")
+      IFS=',' read -r nombre inicio_humano fin_humano total <<< "$line"
+      echo "última: $nombre — $inicio_humano → $fin_humano — $(fmt_dhms "$total")"
+    else
+      echo "no hay registros"
+    fi
+    ;;
+
+  today)
+    if [ -f "$CSV" ] && [ "$(wc -l < "$CSV")" -gt 1 ]; then
+      hoy=$(date +%Y-%m-%d)
+      total=$(awk -F',' -v d="$hoy" 'NR>1 && index($2,d)==1 {sum+=$4} END{print sum+0}' "$CSV")
+      echo "hoy trabajaste $(fmt_dhms "$total")"
+    else
+      echo "no hay registros"
+    fi
+    ;;
+
+  pause)
+    if [ ! -f "$STATE" ]; then echo "no hay tarea activa"; exit 0; fi
+    IFS=',' read -r nombre inicio acumulado modo < "$STATE"
+    if [ "$modo" = "paused" ]; then echo "ya está pausada"; exit 0; fi
+    ahora=$(now)
+    acumulado=$(( acumulado + ahora - inicio ))
+    echo "$nombre,$inicio,$acumulado,paused" > "$STATE"
+    echo "tarea pausada ($(fmt_dhms "$acumulado"))"
+    ;;
+
+  resume)
+    if [ ! -f "$STATE" ]; then echo "no hay tarea pausada"; exit 0; fi
+    IFS=',' read -r nombre inicio acumulado modo < "$STATE"
+    if [ "$modo" != "paused" ]; then echo "la tarea no está pausada"; exit 0; fi
+    echo "$nombre,$(now),$acumulado,run" > "$STATE"
+    echo "tarea reanudada"
+    ;;
+
+  rename)
+    if [ ! -f "$STATE" ]; then echo "no hay tarea activa"; exit 0; fi
+    shift
+    nuevo="$*"
+    if [ -z "$nuevo" ]; then echo "falta el nuevo nombre"; exit 1; fi
+    IFS=',' read -r _nombre inicio acumulado modo < "$STATE"
+    echo "$nuevo,$inicio,$acumulado,$modo" > "$STATE"
+    echo "renombrada a: $nuevo"
+    ;;
+
+  alert)
+    if [ ! -f "$STATE" ]; then echo "no hay tarea activa"; exit 0; fi
+    IFS=',' read -r nombre inicio acumulado modo < "$STATE"
+    if [ "$modo" = "run" ]; then
+      total=$(( acumulado + $(now) - inicio ))
+    else
+      total=$acumulado
+    fi
+    h=$(( total / 3600 ))
+    if [ "$h" -ge 4 ]; then
+      echo "⚠ llevás $h horas en '$nombre'"
+    else
+      echo "todo ok, llevás menos de 4h"
+    fi
+    ;;
+
+  bill)
+    cliente="$2"; rate="$3"
+    if [ -z "$cliente" ] || [ -z "$rate" ]; then
+      echo "uso: work bill CLIENTE RATE_POR_HORA"; exit 1
+    fi
+    if [ ! -f "$CSV" ]; then echo "no hay registros"; exit 0; fi
+    total_secs=$(awk -F',' -v c="$cliente" 'NR>1 && index($1,c)>0 {sum+=$4} END{print sum+0}' "$CSV")
+    horas=$(echo "$total_secs / 3600" | bc -l)
+    cobrar=$(echo "$horas * $rate" | bc -l)
+    echo "cliente: $cliente"
+    echo "horas: $horas"
+    echo "total: $cobrar"
+    ;;
+
+  *)
+    echo "comando desconocido: $1"; echo; show_help; exit 1
+    ;;
+esac
+
