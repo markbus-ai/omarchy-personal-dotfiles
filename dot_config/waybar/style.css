@@ -119,7 +119,7 @@ tooltip label {
 #custom-notification,
 #custom-update,
 #custom-updatespacman,
-#custom-screenrecording-indicator,
+
 #disk,
 #custom-omarchy {
   padding: 0 10px;
@@ -222,9 +222,8 @@ tooltip label {
 }
 
 /* Otros módulos custom que tenías */
-#custom-screenrecording-indicator {
+#custom-screenrecording-indicator.recording {
   color: @rojo;
-  font-size: 12px;
   animation-name: blink-critical;
   animation-duration: 1s;
   animation-timing-function: linear;
@@ -245,4 +244,8 @@ tooltip label {
   /* El separador que pusiste en el script/config */
   border-left: 1px solid alpha(@lila, 0.3);
   margin-left: 10px;
+}
+#custom-idle-indicator.active,
+#custom-notification-silencing-indicator.active {
+  color: #a55555;
 }
